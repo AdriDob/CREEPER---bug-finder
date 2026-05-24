@@ -264,7 +264,44 @@ async def launch_scan(target: TargetCreate, session: Session = Depends(get_db)):
         session.commit()
         raise HTTPException(status_code=500, detail=str(exc))
 
-    return {"target": target.name, "mode": target.mode, "outputs": outputs}
+    return {"target": target.name, "mode": target.mode, "outputs": outputs, "scan_id": scan.id}
+
+
+@app.get("/scan_runs")
+async def list_scan_runs(target_id: int | None = None, session: Session = Depends(get_db)):
+    q = session.query(models.ScanRun)
+    if target_id:
+        q = q.filter(models.ScanRun.target_id == target_id)
+    runs = q.order_by(models.ScanRun.started_at.desc()).limit(50).all()
+    out = []
+    for r in runs:
+        out.append({
+            "id": r.id,
+            "target_id": r.target_id,
+            "mode": r.mode,
+            "status": r.status,
+            "endpoint_count": r.endpoint_count,
+            "started_at": r.started_at.isoformat(sep=" ", timespec="seconds") if r.started_at else None,
+            "finished_at": r.finished_at.isoformat(sep=" ", timespec="seconds") if r.finished_at else None,
+        })
+    return out
+
+
+@app.get("/scan_runs/{scan_id}")
+async def get_scan_run(scan_id: int, session: Session = Depends(get_db)):
+    run = session.query(models.ScanRun).filter(models.ScanRun.id == scan_id).first()
+    if not run:
+        raise HTTPException(status_code=404, detail="ScanRun not found")
+    return {
+        "id": run.id,
+        "target_id": run.target_id,
+        "mode": run.mode,
+        "status": run.status,
+        "endpoint_count": run.endpoint_count,
+        "outputs": run.outputs,
+        "started_at": run.started_at.isoformat(sep=" ", timespec="seconds") if run.started_at else None,
+        "finished_at": run.finished_at.isoformat(sep=" ", timespec="seconds") if run.finished_at else None,
+    }
 
 
 @app.get("/digest")

@@ -203,11 +203,15 @@ with tabs[0]:
     if targets:
         for target in targets:
             scan_time = scan_artifact_timestamp(target.name)
+            scan_info = get_last_scan_info(target.id)
+            # count endpoints
+            ep_count = session.query(models.Endpoint).filter(models.Endpoint.target_id == target.id).count()
             st.markdown(f"**{target.name}** — {target.domain or 'sin dominio'}")
-            cols = st.columns([2, 1, 1])
+            cols = st.columns([2, 1, 1, 1])
             cols[0].write(f"`{target.id}`")
             cols[1].write(f"Último scan: {scan_time or 'nunca'}")
-            cols[2].write(f"Creado: {target.created_at.isoformat(sep=' ', timespec='seconds')}")
+            cols[2].write(f"Estado: {scan_info.get('status')} — {scan_info.get('endpoint_count')} endpoints")
+            cols[3].write(f"Creado: {target.created_at.isoformat(sep=' ', timespec='seconds')}")
             st.divider()
     else:
         st.info("No hay targets. Crea uno para comenzar.")
@@ -249,8 +253,26 @@ with tabs[1]:
                     # refresh counts
                     scan_info = get_last_scan_info(selected_target.id)
                     st.write(f"Endoints registrados: {scan_info.get('endpoint_count')}")
+                    scan_id = scan_result.get("scan_id")
+                    if scan_id:
+                        st.write("Scan ID:", scan_id)
                 else:
                     st.error("El scan no se completó. Verifica el backend.")
+
+        # show recent scan runs
+        runs = backend_request(f"/scan_runs?target_id={selected_target.id}")
+        if runs:
+            st.markdown("#### Ejecuciones recientes")
+            for r in runs:
+                cols = st.columns([1,1,1,2])
+                cols[0].write(f"#{r['id']}")
+                cols[1].write(r['status'])
+                cols[2].write(r.get('endpoint_count') or 0)
+                with cols[3]:
+                    st.write(f"{r.get('started_at')} → {r.get('finished_at') or '-'}")
+                    if st.button(f"Ver detalles {r['id']}", key=f"details_{r['id']}"):
+                        details = backend_request(f"/scan_runs/{r['id']}")
+                        st.json(details)
 
         st.markdown("#### Logs de scan")
         logs = load_scan_logs(selected_target.name)
