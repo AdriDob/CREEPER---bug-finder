@@ -1,4 +1,4 @@
-RASTRO v1.0
+RASTRO v1.0 - Salesforce AAAgent
 =================
 
 Semi-Autonomous Bug Bounty Operating System — Diseño inicial y artefactos.
