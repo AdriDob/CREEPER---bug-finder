@@ -114,3 +114,6 @@ Sigue las instrucciones en https://ollama.com/ para instalar y ejecutar Ollama l
 
 ---
 
+Otras herramientas recomendadas para el uso: Cline/Continue
+
+
