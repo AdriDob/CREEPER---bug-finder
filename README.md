@@ -116,6 +116,8 @@ Sigue las instrucciones en https://ollama.com/ para instalar y ejecutar Ollama l
 
 ---
 
+This project is dedicated to my best friend: Santiago Casals
+
 Otras herramientas recomendadas para el uso: Cline/Continue/Aider
 
 
