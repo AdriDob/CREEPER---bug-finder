@@ -265,4 +265,5 @@ Dashboard Display → Browser
 
 ---
 
-Last Updated: May 2026
+
+Final version estimated for the date 26/6/26
